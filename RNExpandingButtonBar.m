@@ -49,7 +49,11 @@
 @synthesize toggledButton = _toggledButton;
 @synthesize delegate = _delegate;
 
-- (id) initWithImage:(UIImage*)image selectedImage:(UIImage*)selectedImage toggledImage:(UIImage*)toggledImage toggledSelectedImage:(UIImage*)toggledSelectedImage buttons:(NSArray*)buttons center:(CGPoint)center;
+- (id) initWithImage:(UIImage*)image selectedImage:(UIImage*)selectedImage
+        toggledImage:(UIImage*)toggledImage
+toggledSelectedImage:(UIImage*)toggledSelectedImage
+             buttons:(NSArray*)buttons
+              center:(CGPoint)center
 {
     if (self = [super init]) {
         [self setDefaults];
@@ -113,8 +117,13 @@
 }
 
 - (void) onButton:(id)sender
-{    
-    [self showButtonsAnimated:_animated];
+{
+    if (!_toggled) {
+        [self showButtonsAnimated:_animated];
+    }else{
+        [self hideButtonsAnimated:_animated];
+    }
+    
 }
 
 - (void) onToggledButton:(id)sender
@@ -131,23 +140,34 @@
 {
     [self hideButtonsAnimated:NO];
 }
-
+#define DegreesToRadians(x) ((x) * M_PI / 180.0)
 - (void) toggleMainButton
 {
-    UIButton *animateTo;
-    UIButton *animateFrom;
-    if (_toggled) {
-        animateTo = [self button];
-        animateFrom = [self toggledButton];
+//    UIButton *animateTo;
+//    UIButton *animateFrom;
+//    if (_toggled) {
+//        animateTo = [self button];
+//        animateFrom = [self toggledButton];
+//    }
+//    else {
+//        animateTo = [self toggledButton];
+//        animateFrom = [self button];        
+//    }
+//    [UIView animateWithDuration:_fadeTime animations:^{
+//        [animateTo setAlpha:1.0f];
+//        [animateFrom setAlpha:0.0f];
+//    }];
+    if (!_toggled) {
+        [UIView beginAnimations:@"rotate" context:nil];
+        [UIView setAnimationDuration:0.2];
+        [self button].transform = CGAffineTransformMakeRotation(DegreesToRadians(0));
+        [UIView commitAnimations];
+    }else{
+        [UIView beginAnimations:@"rotate" context:nil];
+        [UIView setAnimationDuration:0.2];
+        [self button].transform = CGAffineTransformMakeRotation(DegreesToRadians(45));
+        [UIView commitAnimations];
     }
-    else {
-        animateTo = [self toggledButton];
-        animateFrom = [self button];        
-    }
-    [UIView animateWithDuration:_fadeTime animations:^{
-        [animateTo setAlpha:1.0f];
-        [animateFrom setAlpha:0.0f];
-    }];
 }
 
 - (void) explode:(id)sender
@@ -218,7 +238,7 @@
             [button setAlpha:1.0f];
         }
     }
-    _toggled = NO;
+    _toggled = YES;
     [self toggleMainButton];
     float delegateDelay = _animated ? [[self buttons] count] * _delay + _animationTime : 0.0f;
     if ([self delegate] && [[self delegate] respondsToSelector:@selector(expandingBarDidAppear:)]) {
@@ -281,7 +301,7 @@
     if ([self delegate] && [[self delegate] respondsToSelector:@selector(expandingBarDidDisappear:)]) {
         [[self delegate] performSelector:@selector(expandingBarDidDisappear:) withObject:self afterDelay:delegateDelay];
     }
-    _toggled = YES;
+    _toggled = NO;
     [self toggleMainButton];
 }
 
